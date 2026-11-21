@@ -9,20 +9,24 @@ const TONE: Record<SiteId, string> = {
   etc: 'bg-surface-sunken text-gray-600',
 };
 
+const SIZE = {
+  md: 'size-[34px] rounded-icon text-13',
+  lg: 'size-[46px] rounded-control text-20',
+} as const;
+
 type SiteChipProps = {
   siteId: SiteId;
   /** 칩 안 글자 (site.initial 또는 site.logo) */
   label: string;
+  /** md = 34px(기본), lg = 46px(규정 다시보기 상단) */
+  size?: keyof typeof SIZE;
 };
 
-/** 34px 쇼핑몰 아이콘 칩 (Figma: site/* 의 Frame, c-logo) */
-export default function SiteChip({ siteId, label }: SiteChipProps) {
+/** 쇼핑몰 아이콘 칩 (Figma: site/* 의 Frame, c-logo) */
+export default function SiteChip({ siteId, label, size = 'md' }: SiteChipProps) {
   return (
-    <span
-      aria-hidden
-      className={`flex size-[34px] shrink-0 items-center justify-center rounded-icon text-13 font-bold ${TONE[siteId]}`}
-    >
-      {siteId === 'etc' ? <PlusIcon size={18} /> : label}
+    <span aria-hidden className={`flex shrink-0 items-center justify-center font-bold ${SIZE[size]} ${TONE[siteId]}`}>
+      {siteId === 'etc' ? <PlusIcon size={size === 'md' ? 18 : 22} /> : label}
     </span>
   );
 }
