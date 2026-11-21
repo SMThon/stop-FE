@@ -95,6 +95,16 @@ export type RefundPolicy = {
   originalUrl: string;
 };
 
+/** 05 AI 상담 메시지. text 안의 **강조**는 초록 굵게 표시 */
+export type ChatMessage = {
+  id: string;
+  role: 'ai' | 'user';
+  text: string;
+  time: string;
+  /** AI 답변 아래 '관련 법령 확인' 링크 */
+  lawUrl?: string;
+};
+
 export type LawTip = {
   label: string;
   before: string;
