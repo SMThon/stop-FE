@@ -6,6 +6,7 @@ import Card from '@/components/common/Card';
 import PrimaryButton from '@/components/common/PrimaryButton';
 import SiteChip from '@/components/common/SiteChip';
 import DDayBadge, { SCHEDULE_DOT } from '@/components/common/DDayBadge';
+import StationDot from '@/components/common/StationDot';
 import {
   ArrowRightIcon,
   BellIcon,
@@ -46,21 +47,6 @@ function MoreLink({ to, children }: { to: string; children: string }) {
       {children}
       <ChevronRightIcon size={14} />
     </Link>
-  );
-}
-
-/** 구매 → 오늘 → 마감 진행 표시의 정거장 점 */
-function StationDot({ tone, size }: { tone: 'green' | 'amber' | 'empty'; size: 16 | 20 }) {
-  const ring = { green: 'border-green-400', amber: 'border-amber-400', empty: 'border-gray-300' }[tone];
-  const dot = { green: 'bg-green-400', amber: 'bg-amber-400', empty: '' }[tone];
-  return (
-    <span
-      className={`flex shrink-0 items-center justify-center rounded-full border-[1.5px] bg-surface ${ring} ${
-        size === 16 ? 'size-4' : 'size-5'
-      }`}
-    >
-      {tone !== 'empty' && <span className={`rounded-full ${dot} ${size === 16 ? 'size-2' : 'size-2.5'}`} />}
-    </span>
   );
 }
 
