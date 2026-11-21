@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '@/components/common/Header';
 import Toggle from '@/components/common/Toggle';
 import SettingsSection from '@/components/common/SettingsSection';
@@ -10,6 +10,12 @@ import {
   type NotificationItem,
   type NotificationKey,
 } from '@/mocks/notifications';
+import { notificationApi, type NotificationSettings } from '@/api';
+import { useAsync } from '@/hooks/useAsync';
+import { ErrorMessage, LoadingMessage } from '@/components/common/StatusMessage';
+
+/** 백엔드에 저장되는 항목: 전체 on/off + 환불 마감 며칠 전(daysBefore) */
+const DAYS_BY_KEY: Partial<Record<NotificationKey, number>> = { refundD3: 3, refundD1: 1, refundDDay: 0 };
 
 function formatTime(hhmm: string) {
   const [h, m] = hhmm.split(':').map(Number);
@@ -18,11 +24,50 @@ function formatTime(hhmm: string) {
 
 /** Figma: 06-1 · 알림 설정 */
 export default function NotificationSettingsPage() {
+  const { data, error, loading, reload, setData } = useAsync(() => notificationApi.get(), []);
   const [enabled, setEnabled] = useState(mockNotificationSettings.enabled);
-  const [items, setItems] = useState(mockNotificationSettings.items);
+  // 구독 결제·마케팅·알림 시간은 아직 백엔드 필드가 없어 화면 상태로만 유지
+  const [items, setItems] = useState<Record<NotificationKey, boolean>>(mockNotificationSettings.items);
   const [time, setTime] = useState(mockNotificationSettings.time);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const toggleItem = (key: NotificationKey) => (checked: boolean) => setItems((prev) => ({ ...prev, [key]: checked }));
+  useEffect(() => {
+    if (!data) return;
+    setEnabled(data.enabled);
+    setItems((prev) => {
+      const next = { ...prev };
+      (Object.keys(DAYS_BY_KEY) as NotificationKey[]).forEach((k) => {
+        next[k] = data.daysBefore.includes(DAYS_BY_KEY[k]!);
+      });
+      return next;
+    });
+  }, [data]);
+
+  const save = async (body: NotificationSettings) => {
+    const prev = data;
+    setData(body);
+    setSaveError(null);
+    try {
+      setData(await notificationApi.put(body));
+    } catch (e) {
+      if (prev) setData(prev);
+      setSaveError(e instanceof Error ? e.message : '저장하지 못했어요.');
+    }
+  };
+
+  const daysFrom = (next: typeof items) =>
+    (Object.keys(DAYS_BY_KEY) as NotificationKey[]).filter((k) => next[k]).map((k) => DAYS_BY_KEY[k]!);
+
+  const toggleItem = (key: NotificationKey) => (checked: boolean) => {
+    const next = { ...items, [key]: checked };
+    setItems(next);
+    if (key in DAYS_BY_KEY) void save({ enabled, daysBefore: daysFrom(next) });
+  };
+
+  const toggleAll = (checked: boolean) => {
+    setEnabled(checked);
+    void save({ enabled: checked, daysBefore: daysFrom(items) });
+  };
 
   const renderRow = ({ key, label, description }: NotificationItem) => (
     <div key={key} className="flex h-[66px] items-center gap-3 px-5">
@@ -47,8 +92,16 @@ export default function NotificationSettingsPage() {
             <h2 className="text-16 font-bold text-white">전체 알림</h2>
             <p className="text-12 text-on-dark-300">환불 마감과 결제일을 놓치지 않게 알려드려요</p>
           </div>
-          <Toggle label="전체 알림" checked={enabled} onChange={setEnabled} />
+          <Toggle label="전체 알림" checked={enabled} onChange={toggleAll} disabled={!data} />
         </section>
+
+        {loading && !data && <LoadingMessage />}
+        {error && <ErrorMessage error={error} onRetry={reload} />}
+        {saveError && (
+          <p role="alert" className="mt-3 text-center text-12 text-coral-600">
+            {saveError}
+          </p>
+        )}
 
         <div className="mt-6 flex flex-col">
           {NOTIFICATION_GROUPS.map((group) => (

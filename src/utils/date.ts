@@ -12,6 +12,11 @@ export function toISODate(date: Date): string {
   return `${date.getFullYear()}-${m}-${d}`;
 }
 
+/** 오늘 날짜 'YYYY-MM-DD' (로컬 시간대) */
+export function todayISO(): string {
+  return toISODate(new Date());
+}
+
 /** target - base 일수 (D-day 계산용) */
 export function diffDays(target: string, base: string): number {
   const ms = parseDate(target).getTime() - parseDate(base).getTime();

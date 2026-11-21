@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '@/components/common/Header';
 import Card from '@/components/common/Card';
 import Toggle from '@/components/common/Toggle';
@@ -8,25 +8,41 @@ import { PurchaseTypeTabs, SiteSelector } from '@/components/common/PurchaseSele
 import { DateField, FieldLabel, TextField } from '@/components/common/FormFields';
 import { BellLineIcon, CameraIcon, CheckIcon, ClockIcon } from '@/components/icons';
 import { ROUTES } from '@/constants/routes';
-import { MOCK_TODAY } from '@/mocks';
+import { SITE_PLATFORM } from '@/constants/sites';
+import { mockSites } from '@/mocks';
 import type { PurchaseType, SiteId } from '@/types';
-import { addDays, diffDays, formatDDay, formatFullDate } from '@/utils/date';
+import { diffDays, formatDDay, formatFullDate, todayISO } from '@/utils/date';
+import { BASE_DATE_LABEL, computeDeadline } from '@/utils/policy';
+import { ApiError, policyApi, purchaseApi } from '@/api';
+import { useAsync } from '@/hooks/useAsync';
 
 const MAX_PHOTOS = 5;
-/** 전자상거래법 제17조 청약철회 기간 */
-const REFUND_PERIOD_DAYS = 7;
+const norm = (s: string) => s.toLowerCase().replace(/\s/g, '');
+const isSiteId = (v: string | null): v is SiteId => !!v && mockSites.some((s) => s.id === v);
 
 /** Figma: 07 · 상품 등록 */
 export default function ProductRegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialSite = searchParams.get('site');
   const [photos, setPhotos] = useState<string[]>([]);
-  const [productName, setProductName] = useState('에어프라이어 5.5L');
-  const [siteId, setSiteId] = useState<SiteId>('coupang');
+  const [productName, setProductName] = useState('');
+  const [siteId, setSiteId] = useState<SiteId>(isSiteId(initialSite) ? initialSite : 'coupang');
+  const [customPlatform, setCustomPlatform] = useState('');
   const [purchaseType, setPurchaseType] = useState<PurchaseType>('general');
-  const [price, setPrice] = useState('89000');
-  const [purchasedAt, setPurchasedAt] = useState('2025-05-08');
-  const [receivedAt, setReceivedAt] = useState('2025-05-10');
+  const [price, setPrice] = useState('');
+  const [purchasedAt, setPurchasedAt] = useState(todayISO());
+  const [receivedAt, setReceivedAt] = useState(searchParams.get('receivedAt') ?? '');
   const [notify, setNotify] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 미리보기용: 서버에 등록된 규정 중 같은 쇼핑몰 규정을 찾아 마감일을 계산 (서버도 같은 규칙으로 저장)
+  const { data: policies } = useAsync(() => policyApi.list(), []);
+  const platform = siteId === 'etc' ? customPlatform.trim() : SITE_PLATFORM[siteId];
+  const policy = platform
+    ? policies?.find((p) => norm(p.platform) === norm(platform) || p.id === siteId)
+    : undefined;
 
   // 화면을 벗어날 때만 미리보기 URL 해제 (추가할 때마다 해제하면 표시 중인 이미지가 깨짐)
   const photosRef = useRef(photos);
@@ -39,14 +55,29 @@ export default function ProductRegisterPage() {
     e.target.value = '';
   };
 
-  const deadline = receivedAt ? addDays(receivedAt, REFUND_PERIOD_DAYS) : null;
-  const canSubmit = productName.trim() !== '' && !!receivedAt;
+  const deadline = policy ? computeDeadline(policy, purchasedAt, receivedAt || null) : null;
+  const datesInvalid = !!receivedAt && !!purchasedAt && receivedAt < purchasedAt;
+  const canSubmit = productName.trim() !== '' && !!platform && !!purchasedAt && !!receivedAt && !datesInvalid && !submitting;
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    // TODO: 상품 등록 API 연동
-    navigate(ROUTES.schedule);
+    setSubmitting(true);
+    setError(null);
+    try {
+      // 사진·알림 토글은 아직 백엔드 API가 없어 저장하지 않는다 (알림은 설정 > 알림 설정의 전체 설정을 따름)
+      await purchaseApi.create({
+        platform,
+        productName: productName.trim(),
+        price: Number(price || 0),
+        orderDate: purchasedAt,
+        receivedDate: receivedAt || null,
+      });
+      navigate(ROUTES.schedule);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : '등록하지 못했어요. 다시 시도해 주세요.');
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -110,6 +141,15 @@ export default function ProductRegisterPage() {
           <div className="flex flex-col gap-2.5">
             <FieldLabel required>구매 사이트</FieldLabel>
             <SiteSelector value={siteId} onChange={setSiteId} className="pt-1.5" />
+            {siteId === 'etc' && (
+              <TextField
+                label="쇼핑몰 이름"
+                value={customPlatform}
+                onChange={(e) => setCustomPlatform(e.target.value)}
+                placeholder="쇼핑몰 이름 (예: G마켓, Amazon)"
+                maxLength={100}
+              />
+            )}
           </div>
 
           <div className="flex flex-col gap-2.5">
@@ -141,11 +181,12 @@ export default function ProductRegisterPage() {
                 <DateField label="수령일" value={receivedAt} onChange={setReceivedAt} />
               </div>
             </div>
+            {datesInvalid && <p className="text-11 text-coral-600">수령일은 구매일보다 빠를 수 없어요.</p>}
           </div>
         </Card>
 
         {/* 예상 환불 마감일 */}
-        {deadline && (
+        {policy && deadline && (
           <section className="mt-6 flex items-center gap-3.5 rounded-card bg-green-75 px-4.5 py-5">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-surface text-green-600">
               <ClockIcon size={22} />
@@ -153,9 +194,11 @@ export default function ProductRegisterPage() {
             <div className="flex flex-col gap-0.5">
               <p className="text-11 text-gray-500">예상 환불 마감일</p>
               <p className="text-16 font-bold text-green-600">
-                {formatFullDate(deadline)}까지 · {formatDDay(diffDays(deadline, MOCK_TODAY))}
+                {formatFullDate(deadline)}까지 · {formatDDay(diffDays(deadline, todayISO()))}
               </p>
-              <p className="text-10 text-gray-500">수령일 기준 {REFUND_PERIOD_DAYS}일 (전자상거래법 제17조)</p>
+              <p className="text-10 text-gray-500">
+                {policy.platform} 규정 · {BASE_DATE_LABEL[policy.baseDate]} 기준 {policy.returnDays}일
+              </p>
             </div>
           </section>
         )}
@@ -171,8 +214,20 @@ export default function ProductRegisterPage() {
           <Toggle label="마감일 알림 받기" checked={notify} onChange={setNotify} />
         </Card>
 
+        {platform && policies && (!policy || policy.returnDays == null) && (
+          <p className="mt-6 rounded-card bg-surface-muted px-4.5 py-4 text-12 leading-[19px] text-gray-500">
+            {platform}의 반품 기간은 아직 확인되지 않아 마감일을 자동으로 계산할 수 없어요. 등록은 할 수 있어요.
+          </p>
+        )}
+
+        {error && (
+          <p role="alert" className="mt-4 text-center text-12 text-coral-600">
+            {error}
+          </p>
+        )}
+
         <PrimaryButton type="submit" disabled={!canSubmit} className="mt-6" leadingIcon={<CheckIcon size={18} />}>
-          등록하기
+          {submitting ? '등록 중…' : '등록하기'}
         </PrimaryButton>
       </form>
     </>

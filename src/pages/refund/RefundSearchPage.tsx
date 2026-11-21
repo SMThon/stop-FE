@@ -8,7 +8,9 @@ import { PurchaseTypeTabs, SiteSelector } from '@/components/common/PurchaseSele
 import { DateField } from '@/components/common/FormFields';
 import { ArrowRightIcon, CheckIcon, PlusIcon } from '@/components/icons';
 import { ROUTES } from '@/constants/routes';
+import { refundPolicyIdFor } from '@/constants/sites';
 import type { PurchaseType, SiteId } from '@/types';
+import { todayISO } from '@/utils/date';
 
 function StepTitle({ step, title, right }: { step: number; title: string; right?: ReactNode }) {
   return (
@@ -27,11 +29,13 @@ export default function RefundSearchPage() {
   const navigate = useNavigate();
   const [purchaseType, setPurchaseType] = useState<PurchaseType>('general');
   const [siteId, setSiteId] = useState<SiteId>('coupang');
-  const [receivedAt, setReceivedAt] = useState('2025-05-10');
+  const [receivedAt, setReceivedAt] = useState(todayISO());
 
   const handleSubmit = () => {
     const query = receivedAt ? `?receivedAt=${receivedAt}` : '';
-    navigate(`${ROUTES.refundResult(`${siteId}-${purchaseType}`)}${query}`);
+    // 백엔드에 내장 규정이 없는 조합은 결과 화면에서 '준비 중'으로 안내된다
+    const policyId = refundPolicyIdFor(siteId, purchaseType) ?? `${siteId}-${purchaseType}`;
+    navigate(`${ROUTES.refundResult(policyId)}${query}`);
   };
 
   return (
