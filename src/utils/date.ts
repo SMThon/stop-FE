@@ -53,3 +53,22 @@ export function formatMonthDay(iso: string): string {
   const d = parseDate(iso);
   return `${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
+
+/** 'YYYY-MM-DD' + n일 → 'YYYY-MM-DD' */
+export function addDays(iso: string, days: number): string {
+  const d = parseDate(iso);
+  d.setDate(d.getDate() + days);
+  return toISODate(d);
+}
+
+/** 'YYYY-MM-DD' → '5.10' */
+export function formatShortDate(iso: string): string {
+  const d = parseDate(iso);
+  return `${d.getMonth() + 1}.${d.getDate()}`;
+}
+
+/** 'YYYY-MM-DD' → '2025년 5월 17일' */
+export function formatFullDate(iso: string): string {
+  const d = parseDate(iso);
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+}

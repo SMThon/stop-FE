@@ -77,6 +77,24 @@ export type PolicyReview = {
   applyUrl: string;
 };
 
+/** 04 환불 규정 결과 (쇼핑몰 + 구매 유형별) */
+export type RefundPolicy = {
+  id: string;
+  siteId: SiteId;
+  purchaseType: PurchaseType;
+  /** 예시 상품명 (상품 등록 연동 전 mock) */
+  productName: string;
+  /** 수령일 기본값 (YYYY-MM-DD) */
+  defaultReceivedAt: string;
+  /** 환불 가능 기간(일) */
+  periodDays: number;
+  deadlineTime: string;
+  periodDescription: { before: string; highlight: string; after: string };
+  checklist: string[];
+  law: { title: string; url: string };
+  originalUrl: string;
+};
+
 export type LawTip = {
   label: string;
   before: string;
