@@ -34,6 +34,49 @@ export type Schedule = {
   policyId?: string;
 };
 
+/** 처리 방식: 환불(주문 취소) / 반품 / 교환 */
+export type ClaimType = 'refund' | 'return' | 'exchange';
+
+export type FeeRow = {
+  label: string;
+  description: string;
+  /** 처리 방식별 왕복 배송비(원) */
+  fees: Record<ClaimType, number>;
+};
+
+export type ClaimSection = {
+  type: ClaimType;
+  title: string;
+  /** 오른쪽 기한 배지 (예: 수령 후 7일 이내) */
+  badge: string;
+  description: string;
+  items: { label: string; description: string; fee: number }[];
+  note?: string;
+};
+
+/** 02-1 규정 다시보기: 일정(구매 건)별 규정 요약 */
+export type PolicyReview = {
+  scheduleId: string;
+  siteId: SiteId;
+  productName: string;
+  /** 예: 판매자 배송 · 일반 구매 */
+  tags: string[];
+  receivedAt: string;
+  deadline: string;
+  /** HH:mm */
+  deadlineTime: string;
+  price: number;
+  feeTable: FeeRow[];
+  feeNote: string;
+  sections: ClaimSection[];
+  cautions: string[];
+  /** 출처 안내 */
+  source: string;
+  checkedAt: string;
+  originalUrl: string;
+  applyUrl: string;
+};
+
 export type LawTip = {
   label: string;
   before: string;

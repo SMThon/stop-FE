@@ -11,12 +11,19 @@ type BaseProps = {
 };
 
 type PrimaryButtonProps = BaseProps &
-  (({ to: string } & { onClick?: never }) | ({ to?: undefined } & ButtonHTMLAttributes<HTMLButtonElement>));
+  (
+    | { to: string; href?: never }
+    | { href: string; to?: never }
+    | ({ to?: undefined; href?: undefined } & ButtonHTMLAttributes<HTMLButtonElement>)
+  );
 
 const base =
   'flex h-[54px] w-full items-center justify-center gap-2 rounded-control bg-green-700 text-15 font-bold text-white transition-opacity active:opacity-90 disabled:bg-gray-200 disabled:text-gray-500';
 
-/** Figma: Primary Button (3:109). `to`를 주면 라우트 링크로 렌더링됩니다. */
+/**
+ * Figma: Primary Button (3:109).
+ * `to` → 앱 내부 라우트 링크, `href` → 외부 링크(새 탭), 둘 다 없으면 button.
+ */
 export default function PrimaryButton({ children, trailingIcon, leadingIcon, className = '', ...rest }: PrimaryButtonProps) {
   const content = (
     <>
@@ -25,18 +32,26 @@ export default function PrimaryButton({ children, trailingIcon, leadingIcon, cla
       {trailingIcon}
     </>
   );
+  const cls = `${base} ${className}`;
 
   if (rest.to !== undefined) {
     return (
-      <Link to={rest.to} className={`${base} ${className}`}>
+      <Link to={rest.to} className={cls}>
         {content}
       </Link>
     );
   }
+  if (rest.href !== undefined) {
+    return (
+      <a href={rest.href} target="_blank" rel="noreferrer" className={cls}>
+        {content}
+      </a>
+    );
+  }
 
-  const { to: _to, ...buttonProps } = rest;
+  const { to: _to, href: _href, ...buttonProps } = rest;
   return (
-    <button type="button" className={`${base} ${className}`} {...buttonProps}>
+    <button type="button" className={cls} {...buttonProps}>
       {content}
     </button>
   );

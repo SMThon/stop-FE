@@ -47,3 +47,9 @@ export function buildMonthGrid(year: number, month: number): { date: Date; inMon
   }
   return cells;
 }
+
+/** 'YYYY-MM-DD' → '5월 10일' */
+export function formatMonthDay(iso: string): string {
+  const d = parseDate(iso);
+  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}

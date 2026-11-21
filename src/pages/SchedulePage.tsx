@@ -153,9 +153,9 @@ export default function SchedulePage() {
                     </p>
                     <h3 className="truncate text-15 font-bold text-ink">{s.title}</h3>
                     <p className="text-12 text-gray-500">{s.note}</p>
-                    {s.policyId && (
+                    {s.kind === 'refund' && (
                       <Link
-                        to={ROUTES.refundResult(s.policyId)}
+                        to={ROUTES.schedulePolicy(s.id)}
                         className="flex w-fit items-center gap-0.5 pt-1.5 text-11 font-bold text-green-600"
                       >
                         규정 다시보기

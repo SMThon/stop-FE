@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout';
 import LoginPage from '@/pages/LoginPage';
 import HomePage from '@/pages/HomePage';
 import SchedulePage from '@/pages/SchedulePage';
+import PolicyReviewPage from '@/pages/PolicyReviewPage';
 import RefundSearchPage from '@/pages/refund/RefundSearchPage';
 import RefundResultPage from '@/pages/refund/RefundResultPage';
 import ChatPage from '@/pages/ChatPage';
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
     children: [
       { path: ROUTES.home, element: <HomePage /> },
       { path: ROUTES.schedule, element: <SchedulePage /> },
+      { path: ROUTES.schedulePolicy(), element: <PolicyReviewPage /> },
       { path: ROUTES.refundSearch, element: <RefundSearchPage /> },
       { path: ROUTES.refundResult(), element: <RefundResultPage /> },
       { path: ROUTES.chat, element: <ChatPage /> },
