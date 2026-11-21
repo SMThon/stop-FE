@@ -1,5 +1,5 @@
 /** 쇼핑몰/서비스 */
-export type SiteId = 'coupang' | 'naver' | '11st' | 'netflix' | 'etc';
+export type SiteId = 'coupang' | 'naver' | '11st' | 'netflix' | 'tving' | 'disney' | 'etc';
 
 export type Site = {
   id: SiteId;

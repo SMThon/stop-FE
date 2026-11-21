@@ -1,6 +1,6 @@
 import SiteChip from './SiteChip';
 import { CheckIcon } from '@/components/icons';
-import { mockSites } from '@/mocks';
+import { mockSites, mockSubscriptionSites } from '@/mocks';
 import type { PurchaseType, SiteId } from '@/types';
 
 const PURCHASE_TYPES: { id: PurchaseType; label: string }[] = [
@@ -9,6 +9,9 @@ const PURCHASE_TYPES: { id: PurchaseType; label: string }[] = [
 ];
 
 type Props<T> = { value: T; onChange: (value: T) => void; className?: string };
+
+/** 구매 유형별로 선택 가능한 사이트 (정기 구독 → OTT 서비스) */
+export const sitesFor = (type: PurchaseType) => (type === 'subscription' ? mockSubscriptionSites : mockSites);
 
 /** 일반 구매 / 정기 구독 세그먼트 (Figma: 01 Type Tabs, 03 STEP 1) */
 export function PurchaseTypeTabs({ value, onChange, className = '' }: Props<PurchaseType>) {
@@ -42,10 +45,15 @@ export function PurchaseTypeTabs({ value, onChange, className = '' }: Props<Purc
 }
 
 /** 구매 사이트 선택 타일 (Figma: 01 Site Grid, 03 STEP 2) */
-export function SiteSelector({ value, onChange, className = '' }: Props<SiteId>) {
+export function SiteSelector({
+  value,
+  onChange,
+  purchaseType = 'general',
+  className = '',
+}: Props<SiteId> & { purchaseType?: PurchaseType }) {
   return (
     <div role="radiogroup" aria-label="구매처" className={`flex gap-2 ${className}`}>
-      {mockSites.map((site) => {
+      {sitesFor(purchaseType).map((site) => {
         const active = value === site.id;
         return (
           <button

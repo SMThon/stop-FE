@@ -25,8 +25,15 @@ export const mockSites: Site[] = [
   { id: 'etc', name: '기타', initial: '+', logo: '+' },
 ];
 
-/** 구독 서비스까지 포함한 전체 서비스 목록 (구매처 선택에는 mockSites만 노출) */
-export const mockAllSites: Site[] = [...mockSites, { id: 'netflix', name: '넷플릭스', initial: 'N', logo: 'N' }];
+/** 정기 구독 탭에서 노출하는 구독 서비스 */
+export const mockSubscriptionSites: Site[] = [
+  { id: 'netflix', name: '넷플릭스', initial: 'N', logo: 'N' },
+  { id: 'tving', name: '티빙', initial: 'T', logo: 'T' },
+  { id: 'disney', name: '디즈니+', initial: 'D+', logo: 'D+' },
+];
+
+/** 구독 서비스까지 포함한 전체 서비스 목록 */
+export const mockAllSites: Site[] = [...mockSites, ...mockSubscriptionSites];
 
 export const mockSchedules: Schedule[] = [
   {

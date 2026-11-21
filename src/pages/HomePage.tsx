@@ -5,7 +5,7 @@ import IconButton from '@/components/common/IconButton';
 import Card from '@/components/common/Card';
 import PrimaryButton from '@/components/common/PrimaryButton';
 import SiteChip from '@/components/common/SiteChip';
-import { PurchaseTypeTabs, SiteSelector } from '@/components/common/PurchaseSelectors';
+import { PurchaseTypeTabs, SiteSelector, sitesFor } from '@/components/common/PurchaseSelectors';
 import DDayBadge, { SCHEDULE_DOT } from '@/components/common/DDayBadge';
 import StationDot from '@/components/common/StationDot';
 import {
@@ -55,6 +55,11 @@ function MoreLink({ to, children }: { to: string; children: string }) {
 export default function HomePage() {
   const navigate = useNavigate();
   const [purchaseType, setPurchaseType] = useState<PurchaseType>('general');
+  const changePurchaseType = (type: PurchaseType) => {
+    setPurchaseType(type);
+    // 유형마다 사이트 목록이 달라서 첫 사이트로 맞춘다
+    if (!sitesFor(type).some((s) => s.id === siteId)) setSiteId(sitesFor(type)[0].id);
+  };
   const [siteId, setSiteId] = useState<SiteId>('coupang');
 
   const user = useUser();
@@ -145,8 +150,8 @@ export default function HomePage() {
             <SectionTitle index="01" title="환불 규정 찾아보기" />
             <p className="mt-2 text-13 text-gray-500">구매 정보를 선택하면 바로 찾아드려요.</p>
 
-            <PurchaseTypeTabs value={purchaseType} onChange={setPurchaseType} className="mt-5" />
-            <SiteSelector value={siteId} onChange={setSiteId} className="mt-3" />
+            <PurchaseTypeTabs value={purchaseType} onChange={changePurchaseType} className="mt-5" />
+            <SiteSelector value={siteId} onChange={setSiteId} purchaseType={purchaseType} className="mt-3" />
 
             <PrimaryButton to={refundTarget} className="mt-4.5" trailingIcon={<ArrowRightIcon size={20} />}>
               환불 규정 확인하기

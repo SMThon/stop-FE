@@ -4,7 +4,7 @@ import Header from '@/components/common/Header';
 import IconButton from '@/components/common/IconButton';
 import Card from '@/components/common/Card';
 import PrimaryButton from '@/components/common/PrimaryButton';
-import { PurchaseTypeTabs, SiteSelector } from '@/components/common/PurchaseSelectors';
+import { PurchaseTypeTabs, SiteSelector, sitesFor } from '@/components/common/PurchaseSelectors';
 import { DateField } from '@/components/common/FormFields';
 import { ArrowRightIcon, CheckIcon, PlusIcon } from '@/components/icons';
 import { ROUTES } from '@/constants/routes';
@@ -28,6 +28,11 @@ function StepTitle({ step, title, right }: { step: number; title: string; right?
 export default function RefundSearchPage() {
   const navigate = useNavigate();
   const [purchaseType, setPurchaseType] = useState<PurchaseType>('general');
+  const changePurchaseType = (type: PurchaseType) => {
+    setPurchaseType(type);
+    // 유형마다 사이트 목록이 달라서 첫 사이트로 맞춘다
+    if (!sitesFor(type).some((s) => s.id === siteId)) setSiteId(sitesFor(type)[0].id);
+  };
   const [siteId, setSiteId] = useState<SiteId>('coupang');
   const [receivedAt, setReceivedAt] = useState(todayISO());
 
@@ -67,11 +72,11 @@ export default function RefundSearchPage() {
 
         <Card as="section" className="mt-8 px-5 pt-6 pb-6">
           <StepTitle step={1} title="서비스 유형" />
-          <PurchaseTypeTabs value={purchaseType} onChange={setPurchaseType} className="mt-3" />
+          <PurchaseTypeTabs value={purchaseType} onChange={changePurchaseType} className="mt-3" />
 
           <div className="mt-8">
             <StepTitle step={2} title="구매 사이트" />
-            <SiteSelector value={siteId} onChange={setSiteId} className="mt-3" />
+            <SiteSelector value={siteId} onChange={setSiteId} purchaseType={purchaseType} className="mt-3" />
           </div>
 
           <div className="mt-8">

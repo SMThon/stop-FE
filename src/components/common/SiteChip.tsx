@@ -7,6 +7,8 @@ const TONE: Record<SiteId, string> = {
   naver: 'bg-site-naver text-white',
   '11st': 'bg-site-11st text-white',
   netflix: 'bg-site-netflix-bg text-site-netflix',
+  tving: 'bg-site-tving-bg text-site-tving',
+  disney: 'bg-site-disney-bg text-site-disney',
   etc: 'bg-surface-sunken text-gray-600',
 };
 
