@@ -1,8 +1,9 @@
-import { useState, type ComponentType, type ReactNode } from 'react';
+import { useState, type ComponentType } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/common/Header';
 import Card from '@/components/common/Card';
 import ConfirmModal from '@/components/common/ConfirmModal';
+import SettingsSection from '@/components/common/SettingsSection';
 import {
   BellLineIcon,
   ChevronRightIcon,
@@ -47,15 +48,6 @@ function MenuRow({ label, icon: Icon, value, danger, ...action }: Row) {
     <button type="button" onClick={action.onClick} className={cls}>
       {content}
     </button>
-  );
-}
-
-function MenuSection({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="mt-6">
-      <h2 className="mb-2.5 px-0.5 text-12 text-gray-500">{title}</h2>
-      <Card className="divide-y divide-line-soft overflow-hidden">{children}</Card>
-    </section>
   );
 }
 
@@ -104,27 +96,27 @@ export default function SettingsPage() {
           ))}
         </Card>
 
-        <MenuSection title="내 활동">
+        <SettingsSection title="내 활동">
           <MenuRow label="구매내역" icon={ReceiptIcon} value={`${mockMyStats.purchases}건`} to={ROUTES.purchases} />
-        </MenuSection>
+        </SettingsSection>
 
-        <MenuSection title="앱 설정">
+        <SettingsSection title="앱 설정">
           <MenuRow label="알림 설정" icon={BellLineIcon} value="켜짐" to={ROUTES.notificationSettings} />
-        </MenuSection>
+        </SettingsSection>
 
-        <MenuSection title="데이터 관리">
+        <SettingsSection title="데이터 관리">
           <MenuRow
             label="AI 챗봇 기록 삭제"
             icon={TrashIcon}
             value={`대화 ${chatCount}건`}
             onClick={() => setModal('deleteChats')}
           />
-        </MenuSection>
+        </SettingsSection>
 
-        <MenuSection title="계정">
+        <SettingsSection title="계정">
           <MenuRow label="로그아웃" icon={LogOutIcon} onClick={() => setModal('logout')} />
           <MenuRow label="회원 탈퇴" icon={UserXIcon} danger to={ROUTES.withdraw} />
-        </MenuSection>
+        </SettingsSection>
 
         <p className="mt-7 text-center text-12 text-gray-400">앱 버전 {APP_VERSION}</p>
       </main>
