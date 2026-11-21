@@ -5,7 +5,8 @@ import IconButton from '@/components/common/IconButton';
 import Card from '@/components/common/Card';
 import PrimaryButton from '@/components/common/PrimaryButton';
 import { PurchaseTypeTabs, SiteSelector } from '@/components/common/PurchaseSelectors';
-import { ArrowRightIcon, CalendarIcon, CheckIcon, PlusIcon } from '@/components/icons';
+import { DateField } from '@/components/common/FormFields';
+import { ArrowRightIcon, CheckIcon, PlusIcon } from '@/components/icons';
 import { ROUTES } from '@/constants/routes';
 import type { PurchaseType, SiteId } from '@/types';
 
@@ -71,16 +72,7 @@ export default function RefundSearchPage() {
 
           <div className="mt-8">
             <StepTitle step={3} title="상품 수령일" right={<span className="text-11 text-gray-400">선택사항</span>} />
-            <label className="relative mt-3 flex h-[52px] items-center rounded-control border border-line bg-app px-4">
-              <span className="sr-only">상품 수령일</span>
-              <input
-                type="date"
-                value={receivedAt}
-                onChange={(e) => setReceivedAt(e.target.value)}
-                className="h-full w-full bg-transparent text-14 text-gray-700 outline-none [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-              />
-              <CalendarIcon size={20} className="pointer-events-none absolute right-4 text-gray-800" />
-            </label>
+            <DateField label="상품 수령일" value={receivedAt} onChange={setReceivedAt} className="mt-3" />
           </div>
 
           <PrimaryButton onClick={handleSubmit} className="mt-7" trailingIcon={<ArrowRightIcon size={20} />}>

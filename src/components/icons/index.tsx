@@ -150,6 +150,12 @@ export const UserXIcon = createStrokeIcon('UserXIcon', 24, [
   'M17 8L21 12M21 8L17 12',
 ]);
 
+// ---- 07 상품 등록 ----
+export const CameraIcon = createStrokeIcon('CameraIcon', 24, [
+  'M4 8.5C4 7.39543 4.89543 6.5 6 6.5H7.5L9 4.5H15L16.5 6.5H18C19.1046 6.5 20 7.39543 20 8.5V17.5C20 18.6046 19.1046 19.5 18 19.5H6C4.89543 19.5 4 18.6046 4 17.5V8.5Z',
+  'M15.5 12.5C15.5 14.433 13.933 16 12 16C10.067 16 8.5 14.433 8.5 12.5C8.5 10.567 10.067 9 12 9C13.933 9 15.5 10.567 15.5 12.5Z',
+]);
+
 /** 환불정거장 브랜드 마크 */
 export const BrandMark = createStrokeIcon(
   'BrandMark',

@@ -10,5 +10,6 @@ export const ROUTES = {
   notificationSettings: '/settings/notifications',
   purchases: '/settings/purchases',
   withdraw: '/settings/withdraw',
-  productNew: '/products/new',
+  /** 상품 등록은 일정 탭 하위 (하단 탭 '일정' 활성) */
+  productNew: '/schedule/new',
 } as const;
