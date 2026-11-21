@@ -4,7 +4,7 @@ import Header from '@/components/common/Header';
 import Card from '@/components/common/Card';
 import Toggle from '@/components/common/Toggle';
 import PrimaryButton from '@/components/common/PrimaryButton';
-import { PurchaseTypeTabs, SiteSelector } from '@/components/common/PurchaseSelectors';
+import { PurchaseTypeTabs, SiteSelector, sitesFor } from '@/components/common/PurchaseSelectors';
 import { DateField, FieldLabel, TextField } from '@/components/common/FormFields';
 import { BellLineIcon, CameraIcon, CheckIcon, ClockIcon } from '@/components/icons';
 import { ROUTES } from '@/constants/routes';
@@ -30,6 +30,11 @@ export default function ProductRegisterPage() {
   const [siteId, setSiteId] = useState<SiteId>(isSiteId(initialSite) ? initialSite : 'coupang');
   const [customPlatform, setCustomPlatform] = useState('');
   const [purchaseType, setPurchaseType] = useState<PurchaseType>('general');
+  const changePurchaseType = (type: PurchaseType) => {
+    setPurchaseType(type);
+    // 유형마다 사이트 목록이 달라서 첫 사이트로 맞춘다
+    if (!sitesFor(type).some((s) => s.id === siteId)) setSiteId(sitesFor(type)[0].id);
+  };
   const [price, setPrice] = useState('');
   const [purchasedAt, setPurchasedAt] = useState(todayISO());
   const [receivedAt, setReceivedAt] = useState(searchParams.get('receivedAt') ?? '');
@@ -140,7 +145,7 @@ export default function ProductRegisterPage() {
 
           <div className="flex flex-col gap-2.5">
             <FieldLabel required>구매 사이트</FieldLabel>
-            <SiteSelector value={siteId} onChange={setSiteId} className="pt-1.5" />
+            <SiteSelector value={siteId} onChange={setSiteId} purchaseType={purchaseType} className="pt-1.5" />
             {siteId === 'etc' && (
               <TextField
                 label="쇼핑몰 이름"
@@ -154,7 +159,7 @@ export default function ProductRegisterPage() {
 
           <div className="flex flex-col gap-2.5">
             <FieldLabel>서비스 유형</FieldLabel>
-            <PurchaseTypeTabs value={purchaseType} onChange={setPurchaseType} />
+            <PurchaseTypeTabs value={purchaseType} onChange={changePurchaseType} />
           </div>
 
           <div className="flex flex-col gap-2.5">

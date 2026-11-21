@@ -7,6 +7,8 @@ export const SITE_PLATFORM: Record<SiteId, string> = {
   naver: '네이버',
   '11st': '11번가',
   netflix: '넷플릭스',
+  tving: '티빙',
+  disney: '디즈니플러스',
   etc: '기타',
 };
 
@@ -19,6 +21,8 @@ export const SITE_POLICY_ID: Record<SiteId, string | null> = {
   '11st': '11st',
   naver: null,
   netflix: null,
+  tving: null,
+  disney: null,
   etc: null,
 };
 
