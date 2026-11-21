@@ -5,13 +5,13 @@ import IconButton from '@/components/common/IconButton';
 import Card from '@/components/common/Card';
 import PrimaryButton from '@/components/common/PrimaryButton';
 import SiteChip from '@/components/common/SiteChip';
+import { PurchaseTypeTabs, SiteSelector } from '@/components/common/PurchaseSelectors';
 import DDayBadge, { SCHEDULE_DOT } from '@/components/common/DDayBadge';
 import StationDot from '@/components/common/StationDot';
 import {
   ArrowRightIcon,
   BellIcon,
   ChatIcon,
-  CheckIcon,
   ChevronRightIcon,
   ClockIcon,
   LawIcon,
@@ -22,10 +22,6 @@ import { MOCK_TODAY, mockLawTip, mockSchedules, mockSites, mockUser } from '@/mo
 import type { PurchaseType, Schedule, SiteId } from '@/types';
 import { diffDays, formatDDay, parseDate } from '@/utils/date';
 
-const PURCHASE_TYPES: { id: PurchaseType; label: string }[] = [
-  { id: 'general', label: '일반 구매' },
-  { id: 'subscription', label: '정기 구독' },
-];
 
 const UPCOMING_SUBTITLE: Record<Schedule['kind'], string> = {
   refund: '환불 신청 마감일',
@@ -146,62 +142,8 @@ export default function HomePage() {
             <SectionTitle index="01" title="환불 규정 찾아보기" />
             <p className="mt-2 text-13 text-gray-500">구매 정보를 선택하면 바로 찾아드려요.</p>
 
-            <div role="radiogroup" aria-label="구매 유형" className="mt-5 flex gap-1 rounded-control bg-surface-muted p-1">
-              {PURCHASE_TYPES.map(({ id, label }) => {
-                const active = purchaseType === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setPurchaseType(id)}
-                    className={`flex h-12 flex-1 items-center justify-center gap-2 rounded-icon text-13 font-medium ${
-                      active ? 'bg-surface text-green-600 shadow-tab' : 'text-gray-600'
-                    }`}
-                  >
-                    <span
-                      aria-hidden
-                      className={`size-4 rounded-full bg-surface ${
-                        active ? 'border-[5px] border-green-400' : 'border-[1.5px] border-gray-400'
-                      }`}
-                    />
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div role="radiogroup" aria-label="구매처" className="mt-3 flex gap-2">
-              {mockSites.map((site) => {
-                const active = siteId === site.id;
-                return (
-                  <button
-                    key={site.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setSiteId(site.id)}
-                    className={`relative flex h-[88px] min-w-0 flex-1 flex-col items-center justify-center gap-2 rounded-control text-12 ${
-                      active
-                        ? 'border-[1.5px] border-green-300 bg-green-50 font-bold text-green-600'
-                        : 'border border-line font-medium text-gray-600'
-                    }`}
-                  >
-                    <SiteChip siteId={site.id} label={site.initial} />
-                    {site.name}
-                    {active && (
-                      <span
-                        aria-hidden
-                        className="absolute -top-[9.5px] -right-[6.5px] flex size-[22px] items-center justify-center rounded-full border-2 border-white bg-green-400 text-white"
-                      >
-                        <CheckIcon size={12} />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <PurchaseTypeTabs value={purchaseType} onChange={setPurchaseType} className="mt-5" />
+            <SiteSelector value={siteId} onChange={setSiteId} className="mt-3" />
 
             <PrimaryButton to={refundTarget} className="mt-4.5" trailingIcon={<ArrowRightIcon size={20} />}>
               환불 규정 확인하기
