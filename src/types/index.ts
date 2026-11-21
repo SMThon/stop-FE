@@ -1,5 +1,5 @@
 /** 쇼핑몰/서비스 */
-export type SiteId = 'coupang' | 'naver' | '11st' | 'etc';
+export type SiteId = 'coupang' | 'naver' | '11st' | 'netflix' | 'etc';
 
 export type Site = {
   id: SiteId;
@@ -103,6 +103,27 @@ export type ChatMessage = {
   time: string;
   /** AI 답변 아래 '관련 법령 확인' 링크 */
   lawUrl?: string;
+};
+
+/** 06-2 구매내역 */
+export type PurchaseStatus = 'refundable' | 'subscribed' | 'refunded' | 'expired';
+
+export type Purchase = {
+  id: string;
+  siteId: SiteId;
+  productName: string;
+  /** 예: 5.10 수령 / 매월 26일 */
+  meta: string;
+  price: number;
+  /** 정기 구독이면 월 요금 표기 */
+  isSubscription?: boolean;
+  /** 구매(수령) 월 YYYY-MM */
+  month: string;
+  status: PurchaseStatus;
+  /** 환불 가능일 때 마감일 */
+  deadline?: string;
+  /** 연결된 일정 (규정 다시보기) */
+  scheduleId?: string;
 };
 
 export type LawTip = {

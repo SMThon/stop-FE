@@ -6,6 +6,7 @@ const TONE: Record<SiteId, string> = {
   coupang: 'bg-site-coupang-bg text-site-coupang',
   naver: 'bg-site-naver text-white',
   '11st': 'bg-site-11st text-white',
+  netflix: 'bg-site-netflix-bg text-site-netflix',
   etc: 'bg-surface-sunken text-gray-600',
 };
 
@@ -13,6 +14,8 @@ const SIZE = {
   md: 'size-[34px] rounded-icon text-13',
   lg: 'size-[46px] rounded-control text-20',
   xl: 'size-[52px] rounded-tile text-20',
+  /** 44px (구매내역) */
+  list: 'size-11 rounded-control text-15',
 } as const;
 
 type SiteChipProps = {

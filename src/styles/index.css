@@ -81,6 +81,11 @@
   --color-site-coupang-bg: #edf3f3;
   --color-site-naver: #38a566;
   --color-site-11st: #ef6b59;
+  --color-site-netflix: #b64545;
+  --color-site-netflix-bg: #f6eaea;
+
+  /* 구매내역 요약 카드 */
+  --color-green-75: #eaf5ed;
 
   /* Google 로그인 버튼 (Google 브랜드 가이드 색) */
   --color-google-border: #dadce0;
