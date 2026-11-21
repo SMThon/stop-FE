@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/common/Header';
 import IconButton from '@/components/common/IconButton';
@@ -18,14 +18,20 @@ import {
 } from '@/components/icons';
 import trainArt from '@/assets/illustrations/train-art.svg';
 import { ROUTES } from '@/constants/routes';
-import { MOCK_TODAY, mockLawTip, mockSchedules, mockSites, mockUser } from '@/mocks';
-import type { PurchaseType, Schedule, SiteId } from '@/types';
-import { diffDays, formatDDay, parseDate } from '@/utils/date';
+import { mockLawTip } from '@/mocks';
+import type { PurchaseType, ScheduleKind, SiteId } from '@/types';
+import { formatDDay, parseDate } from '@/utils/date';
+import { calendarApi } from '@/api';
+import { useAsync } from '@/hooks/useAsync';
+import { useUser } from '@/app/auth';
+import { refundPolicyIdFor } from '@/constants/sites';
+import { toScheduleView } from '@/utils/schedule';
 
 
-const UPCOMING_SUBTITLE: Record<Schedule['kind'], string> = {
+const UPCOMING_SUBTITLE: Record<ScheduleKind, string> = {
   refund: '환불 신청 마감일',
   subscription: '다음 구독 결제일',
+  custom: '직접 추가한 일정',
 };
 
 function SectionTitle({ index, title }: { index: string; title: string }) {
@@ -51,25 +57,22 @@ export default function HomePage() {
   const [purchaseType, setPurchaseType] = useState<PurchaseType>('general');
   const [siteId, setSiteId] = useState<SiteId>('coupang');
 
-  const upcoming = useMemo(
-    () =>
-      mockSchedules
-        .filter((s) => diffDays(s.date, MOCK_TODAY) >= 0)
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    [],
-  );
+  const user = useUser();
+  const { data, loading, error } = useAsync(() => calendarApi.upcoming(10), []);
+  const upcoming = (data?.items ?? []).map(toScheduleView);
   const nearestRefund = upcoming.find((s) => s.kind === 'refund');
-  const nearestSite = mockSites.find((s) => s.id === nearestRefund?.siteId);
+  const nearestSite = nearestRefund?.site;
 
+  const policyId = refundPolicyIdFor(siteId, purchaseType);
   const refundTarget =
-    siteId === 'etc' ? ROUTES.refundSearch : ROUTES.refundResult(`${siteId}-${purchaseType}`);
+    siteId === 'etc' ? ROUTES.refundSearch : ROUTES.refundResult(policyId ?? `${siteId}-${purchaseType}`);
 
   return (
     <>
       <Header
         variant="brand"
         right={
-          <IconButton label="알림 설정" badge onClick={() => navigate(ROUTES.notificationSettings)}>
+          <IconButton label="알림 설정" badge={(data?.imminentCount ?? 0) > 0} onClick={() => navigate(ROUTES.notificationSettings)}>
             <BellIcon size={22} />
           </IconButton>
         }
@@ -86,7 +89,7 @@ export default function HomePage() {
               height={112}
               className="pointer-events-none absolute top-[82px] -right-6"
             />
-            <p className="text-13 text-on-dark-400">안녕하세요, {mockUser.name}님</p>
+            <p className="text-13 text-on-dark-400">안녕하세요, {user.name}님</p>
             <h2 className="relative mt-[9px] text-28 leading-display font-bold tracking-display text-white">
               놓치기 쉬운 환불,
               <br />
@@ -107,7 +110,7 @@ export default function HomePage() {
 
                 <div className="flex items-center gap-3.5">
                   <span className="flex size-[52px] shrink-0 items-center justify-center rounded-tile bg-coral-50 text-16 font-bold text-coral-600">
-                    {formatDDay(diffDays(nearestRefund.date, MOCK_TODAY))}
+                    {formatDDay(nearestRefund.dday)}
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <p className="truncate text-15 font-bold text-ink">{nearestRefund.shortTitle}</p>
@@ -156,11 +159,18 @@ export default function HomePage() {
               <SectionTitle index="02" title="다가오는 일정" />
               <MoreLink to={ROUTES.schedule}>캘린더 보기</MoreLink>
             </div>
+            {loading && <p className="py-6 text-center text-13 text-gray-400">불러오는 중이에요…</p>}
+            {error && <p className="py-6 text-center text-13 text-gray-400">{error.message}</p>}
+            {!loading && !error && upcoming.length === 0 && (
+              <Link to={ROUTES.productNew} className="py-6 text-center text-13 text-gray-400">
+                다가오는 일정이 없어요. <span className="font-bold text-green-600">상품 등록하기</span>
+              </Link>
+            )}
             <ul>
               {upcoming.slice(0, 2).map((s) => {
                 const date = parseDate(s.date);
                 return (
-                  <li key={s.id} className="border-b border-line-soft last:border-b-0">
+                  <li key={s.key} className="border-b border-line-soft last:border-b-0">
                     <Link to={ROUTES.schedule} className="flex h-[76px] items-center gap-3.5">
                       <span className="flex w-9 shrink-0 flex-col items-center">
                         <span className="text-10 text-gray-400">{date.getMonth() + 1}월</span>
@@ -171,7 +181,7 @@ export default function HomePage() {
                         <span className="truncate text-15 font-medium text-ink">{s.shortTitle}</span>
                         <span className="text-12 text-gray-500">{UPCOMING_SUBTITLE[s.kind]}</span>
                       </span>
-                      <DDayBadge kind={s.kind}>{formatDDay(diffDays(s.date, MOCK_TODAY))}</DDayBadge>
+                      <DDayBadge kind={s.kind}>{formatDDay(s.dday)}</DDayBadge>
                     </Link>
                   </li>
                 );

@@ -3,9 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/common/Header';
 import Card from '@/components/common/Card';
 import CautionCard from '@/components/common/CautionCard';
+import { TextField } from '@/components/common/FormFields';
 import { CheckIcon } from '@/components/icons';
 import { ROUTES } from '@/constants/routes';
-import { mockMyStats, mockUser } from '@/mocks';
+import { ApiError, authApi, purchaseApi } from '@/api';
+import { useAsync } from '@/hooks/useAsync';
+import { useUser } from '@/app/auth';
+import { chatHistory } from '@/utils/chatHistory';
 
 const REASONS = ['사용할 일이 많지 않아요', '원하는 기능이 없어요', '알림이 너무 많아요', '기타'];
 
@@ -14,17 +18,33 @@ export default function WithdrawPage() {
   const navigate = useNavigate();
   const [reason, setReason] = useState<string | null>(REASONS[0]);
   const [agreed, setAgreed] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const user = useUser();
+  const { data: purchases } = useAsync(() => purchaseApi.list(), []);
+  const count = purchases?.length ?? 0;
 
   const deletedItems = [
-    `등록한 상품 ${mockMyStats.products}건과 환불 일정`,
-    `구매내역 ${mockMyStats.purchases}건`,
-    `AI 상담 기록 ${mockMyStats.chats}건`,
-    'Google 계정 연동 정보',
+    `등록한 상품 ${count}건과 환불 일정`,
+    `구매내역 ${count}건`,
+    `AI 상담 기록 ${chatHistory.count()}건`,
+    '계정 정보 (이메일)',
   ];
 
-  const handleWithdraw = () => {
-    // TODO: 회원 탈퇴 API 연동 (reason 전송)
-    navigate(ROUTES.login, { replace: true });
+  const handleWithdraw = async () => {
+    if (!agreed || !password || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      // 탈퇴 사유는 백엔드 API가 받지 않아 전송하지 않는다
+      await authApi.withdraw(password);
+      chatHistory.clear();
+      navigate(ROUTES.login, { replace: true });
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : '탈퇴하지 못했어요. 다시 시도해 주세요.');
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -33,7 +53,7 @@ export default function WithdrawPage() {
 
       <main className="px-gutter pt-8 pb-7">
         <h2 className="px-0.5 text-26 leading-[1.38] font-bold text-ink">
-          {mockUser.name}님,
+          {user.name}님,
           <br />
           정말 떠나시나요?
         </h2>
@@ -73,6 +93,23 @@ export default function WithdrawPage() {
           </div>
         </Card>
 
+        <div className="mt-6 flex flex-col gap-2.5">
+          <p className="px-1 text-14 font-bold text-ink">비밀번호 확인</p>
+          <TextField
+            label="비밀번호"
+            type="password"
+            autoComplete="current-password"
+            placeholder="비밀번호를 입력하세요"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {error && (
+            <p role="alert" className="px-1 text-12 text-coral-600">
+              {error}
+            </p>
+          )}
+        </div>
+
         <label className="mt-6 flex cursor-pointer items-center gap-2.5 px-1 text-14 font-bold text-ink">
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="peer sr-only" />
           <span
@@ -89,10 +126,10 @@ export default function WithdrawPage() {
         <button
           type="button"
           onClick={handleWithdraw}
-          disabled={!agreed}
+          disabled={!agreed || !password || submitting}
           className="mt-6 h-[54px] w-full rounded-control bg-danger text-16 font-bold text-white disabled:bg-gray-200 disabled:text-gray-500"
         >
-          탈퇴하기
+          {submitting ? '처리 중…' : '탈퇴하기'}
         </button>
         <button type="button" onClick={() => navigate(-1)} className="mt-4 w-full text-14 text-gray-500">
           조금 더 써볼게요

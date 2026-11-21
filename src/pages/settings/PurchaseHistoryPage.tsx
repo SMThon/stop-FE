@@ -4,79 +4,87 @@ import Header from '@/components/common/Header';
 import Card from '@/components/common/Card';
 import ChipTabs from '@/components/common/ChipTabs';
 import SiteChip from '@/components/common/SiteChip';
+import { ErrorMessage, LoadingMessage } from '@/components/common/StatusMessage';
 import { ROUTES } from '@/constants/routes';
-import { MOCK_TODAY, mockAllSites } from '@/mocks';
-import { mockPurchases } from '@/mocks/purchases';
-import type { Purchase, PurchaseStatus } from '@/types';
-import { diffDays, formatDDay } from '@/utils/date';
+import { siteForPlatform } from '@/constants/sites';
+import { purchaseApi, type ApiPurchase, type ApiPurchaseStatus } from '@/api';
+import { useAsync } from '@/hooks/useAsync';
+import { formatDDay, formatShortDate } from '@/utils/date';
 import { formatWon } from '@/utils/format';
 
-type Filter = 'all' | Exclude<PurchaseStatus, 'subscribed'>;
+type Filter = 'all' | ApiPurchaseStatus;
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: '전체' },
-  { id: 'refundable', label: '환불 가능' },
-  { id: 'refunded', label: '환불 완료' },
-  { id: 'expired', label: '기간 만료' },
+  { id: '보관 중', label: '환불 가능' },
+  { id: '반품 신청', label: '반품 신청' },
+  { id: '환불 완료', label: '환불 완료' },
+  { id: '기한 지남', label: '기간 만료' },
 ];
 
-const STATUS_STYLE: Record<PurchaseStatus, string> = {
-  refundable: 'bg-green-100 text-green-600',
-  subscribed: 'bg-amber-50 text-amber-700',
-  refunded: 'bg-surface-muted text-gray-600',
-  expired: 'bg-surface-muted text-gray-400',
+const STATUS_STYLE: Record<ApiPurchaseStatus, string> = {
+  '보관 중': 'bg-green-100 text-green-600',
+  '반품 신청': 'bg-amber-50 text-amber-700',
+  '환불 완료': 'bg-surface-muted text-gray-600',
+  '기한 지남': 'bg-surface-muted text-gray-400',
 };
 
-function statusLabel(p: Purchase) {
+function statusLabel(p: ApiPurchase) {
   switch (p.status) {
-    case 'refundable':
-      return `${formatDDay(diffDays(p.deadline ?? MOCK_TODAY, MOCK_TODAY))} 환불 가능`;
-    case 'subscribed':
-      return '구독 중';
-    case 'refunded':
-      return '환불 완료';
-    case 'expired':
+    case '보관 중':
+      return p.dday != null ? `${formatDDay(p.dday)} 환불 가능` : '기한 미확인';
+    case '기한 지남':
       return '기간 만료';
+    default:
+      return p.status;
   }
 }
 
-function PurchaseCard({ purchase }: { purchase: Purchase }) {
-  const site = mockAllSites.find((s) => s.id === purchase.siteId)!;
-  const body = (
-    <Card className="flex items-center gap-3.5 px-4.5 py-[22px]">
-      <SiteChip siteId={site.id} label={site.initial} size="list" />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="text-11 text-gray-400">{purchase.meta}</p>
-        <p className="truncate text-16 font-bold text-ink">{purchase.productName}</p>
-        <p className="text-13 text-gray-700">
-          {purchase.isSubscription ? `월 ${formatWon(purchase.price)}` : formatWon(purchase.price)}
-        </p>
-      </div>
-      <span className={`shrink-0 rounded-chip px-2.5 py-1.5 text-11 font-bold ${STATUS_STYLE[purchase.status]}`}>
-        {statusLabel(purchase)}
-      </span>
-    </Card>
+function PurchaseCard({ purchase }: { purchase: ApiPurchase }) {
+  const site = siteForPlatform(purchase.platform);
+  const meta = purchase.receivedDate
+    ? `${site.name} · ${formatShortDate(purchase.receivedDate)} 수령`
+    : `${site.name} · ${formatShortDate(purchase.orderDate)} 주문`;
+  return (
+    <Link to={ROUTES.schedulePolicy(purchase.id)}>
+      <Card className="flex items-center gap-3.5 px-4.5 py-[22px]">
+        <SiteChip siteId={site.id} label={site.initial} size="list" />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <p className="text-11 text-gray-400">{meta}</p>
+          <p className="truncate text-16 font-bold text-ink">{purchase.productName}</p>
+          <p className="text-13 text-gray-700">{formatWon(purchase.price)}</p>
+        </div>
+        <span className={`shrink-0 rounded-chip px-2.5 py-1.5 text-11 font-bold ${STATUS_STYLE[purchase.status]}`}>
+          {statusLabel(purchase)}
+        </span>
+      </Card>
+    </Link>
   );
-  return purchase.scheduleId ? <Link to={ROUTES.schedulePolicy(purchase.scheduleId)}>{body}</Link> : body;
 }
 
 /** Figma: 06-2 · 구매내역 */
 export default function PurchaseHistoryPage() {
   const [filter, setFilter] = useState<Filter>('all');
+  const { data: purchases, error, loading, reload } = useAsync(() => purchaseApi.list(), []);
 
-  const refundable = mockPurchases.filter((p) => p.status === 'refundable');
+  const all = purchases ?? [];
+  const refundable = all.filter((p) => p.status === '보관 중' && p.deadline);
   const summary = [
-    { label: '전체 구매', value: `${mockPurchases.length}` },
+    { label: '전체 구매', value: `${all.length}` },
     { label: '환불 가능', value: `${refundable.length}` },
     { label: '환불 가능 금액', value: formatWon(refundable.reduce((sum, p) => sum + p.price, 0)) },
   ];
 
   const groups = useMemo(() => {
-    const list = mockPurchases.filter((p) => filter === 'all' || p.status === filter);
-    const byMonth = new Map<string, Purchase[]>();
-    list.forEach((p) => byMonth.set(p.month, [...(byMonth.get(p.month) ?? []), p]));
+    const list = all.filter((p) => filter === 'all' || p.status === filter);
+    const byMonth = new Map<string, ApiPurchase[]>();
+    list.forEach((p) => {
+      const month = (p.receivedDate ?? p.orderDate).slice(0, 7);
+      byMonth.set(month, [...(byMonth.get(month) ?? []), p]);
+    });
     return [...byMonth.entries()].sort(([a], [b]) => b.localeCompare(a));
-  }, [filter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [purchases, filter]);
 
   return (
     <>
@@ -92,9 +100,13 @@ export default function PurchaseHistoryPage() {
           ))}
         </section>
 
-        <ChipTabs tabs={FILTERS} value={filter} onChange={setFilter} label="구매내역 필터" className="mt-4" />
+        <ChipTabs tabs={FILTERS} value={filter} onChange={setFilter} label="구매내역 필터" className="mt-4 overflow-x-auto" />
 
-        {groups.length === 0 && <p className="pt-12 text-center text-13 text-gray-400">해당하는 구매내역이 없어요.</p>}
+        {loading && !purchases && <LoadingMessage />}
+        {error && <ErrorMessage error={error} onRetry={reload} />}
+        {purchases && groups.length === 0 && (
+          <p className="pt-12 text-center text-13 text-gray-400">해당하는 구매내역이 없어요.</p>
+        )}
 
         {groups.map(([month, items]) => {
           const [y, m] = month.split('-').map(Number);

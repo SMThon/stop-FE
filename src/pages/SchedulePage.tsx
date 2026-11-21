@@ -6,30 +6,48 @@ import Card from '@/components/common/Card';
 import { SCHEDULE_DOT, SCHEDULE_LABEL, SCHEDULE_TEXT } from '@/components/common/DDayBadge';
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@/components/icons';
 import { ROUTES } from '@/constants/routes';
-import { MOCK_TODAY, mockSchedules } from '@/mocks';
 import type { ScheduleKind } from '@/types';
-import { WEEKDAYS, buildMonthGrid, diffDays, formatDDay, parseDate, toISODate, weekdayLabel } from '@/utils/date';
+import { WEEKDAYS, buildMonthGrid, formatDDay, parseDate, toISODate, todayISO, weekdayLabel } from '@/utils/date';
+import { calendarApi } from '@/api';
+import { useAsync } from '@/hooks/useAsync';
+import { ErrorMessage, LoadingMessage } from '@/components/common/StatusMessage';
+import { toScheduleView, type ScheduleView } from '@/utils/schedule';
 
-const LEGEND: ScheduleKind[] = ['refund', 'subscription'];
+const LEGEND: ScheduleKind[] = ['refund', 'custom'];
+
+const NOTE: Record<ScheduleKind, string> = {
+  refund: '23:59까지 환불 신청 가능',
+  subscription: '정기 결제 예정',
+  custom: '직접 추가한 일정',
+};
 
 export default function SchedulePage() {
   const navigate = useNavigate();
-  const today = parseDate(MOCK_TODAY);
+  const todayIso = todayISO();
+  const today = parseDate(todayIso);
   const [cursor, setCursor] = useState({ year: today.getFullYear(), month: today.getMonth() });
-  const [selected, setSelected] = useState(MOCK_TODAY);
+  const [selected, setSelected] = useState(todayIso);
+
+  const monthKey = `${cursor.year}-${String(cursor.month + 1).padStart(2, '0')}`;
+  const monthRes = useAsync(() => calendarApi.month(monthKey), [monthKey]);
+  const upcomingRes = useAsync(() => calendarApi.upcoming(30), []);
 
   const cells = useMemo(() => buildMonthGrid(cursor.year, cursor.month), [cursor]);
-  const kindByDate = useMemo(() => new Map(mockSchedules.map((s) => [s.date, s.kind])), []);
-  const upcoming = useMemo(
-    () =>
-      mockSchedules
-        .filter((s) => diffDays(s.date, MOCK_TODAY) >= 0)
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    [],
-  );
+  const monthEvents = useMemo(() => (monthRes.data?.events ?? []).map(toScheduleView), [monthRes.data]);
+  // 같은 날에 환불 마감이 있으면 환불 점을 우선 표시
+  const kindByDate = useMemo(() => {
+    const map = new Map<string, ScheduleKind>();
+    monthEvents.forEach((e) => {
+      if (!map.has(e.date) || e.kind === 'refund') map.set(e.date, e.kind);
+    });
+    return map;
+  }, [monthEvents]);
 
   const selectedDate = parseDate(selected);
-  const selectedCount = mockSchedules.filter((s) => s.date === selected).length;
+  const selectedEvents = monthEvents.filter((s) => s.date === selected);
+  const selectedCount = selectedEvents.length;
+  // 선택한 날에 일정이 있으면 그 일정, 없으면 다가오는 일정 전체
+  const list: ScheduleView[] = selectedCount > 0 ? selectedEvents : (upcomingRes.data?.items ?? []).map(toScheduleView);
 
   const moveMonth = (delta: number) =>
     setCursor(({ year, month }) => {
@@ -121,7 +139,7 @@ export default function SchedulePage() {
               {selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일
             </span>
             <h2 className="text-22 text-ink">
-              {selected === MOCK_TODAY ? '오늘' : `${weekdayLabel(selectedDate)}요일`}
+              {selected === todayIso ? '오늘' : `${weekdayLabel(selectedDate)}요일`}
             </h2>
           </div>
           <span className="text-11 text-gray-400">
@@ -130,12 +148,20 @@ export default function SchedulePage() {
         </div>
 
         {/* 다가오는 일정 목록 */}
+        {selectedCount === 0 && upcomingRes.loading && <LoadingMessage />}
+        {selectedCount === 0 && upcomingRes.error && <ErrorMessage error={upcomingRes.error} onRetry={upcomingRes.reload} />}
+        {monthRes.error && <ErrorMessage error={monthRes.error} onRetry={monthRes.reload} />}
+        {selectedCount === 0 && upcomingRes.data && list.length === 0 && (
+          <Link to={ROUTES.productNew} className="block pt-8 text-center text-13 text-gray-400">
+            다가오는 일정이 없어요. <span className="font-bold text-green-600">상품 등록하기</span>
+          </Link>
+        )}
         <ul className="flex flex-col gap-3">
-          {upcoming.map((s, i) => {
+          {list.map((s, i) => {
             const date = parseDate(s.date);
-            const isLast = i === upcoming.length - 1;
+            const isLast = i === list.length - 1;
             return (
-              <li key={s.id}>
+              <li key={s.key}>
                 <Card as="article" radius="sm" className="flex items-start gap-3.5 px-4.5 py-5.5">
                   <span className="flex w-9 shrink-0 flex-col items-center gap-0.5">
                     <span className="text-11 text-gray-500">{weekdayLabel(date)}</span>
@@ -149,13 +175,13 @@ export default function SchedulePage() {
 
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <p className={`text-11 font-bold ${SCHEDULE_TEXT[s.kind]}`}>
-                      {SCHEDULE_LABEL[s.kind]} · {formatDDay(diffDays(s.date, MOCK_TODAY))}
+                      {SCHEDULE_LABEL[s.kind]} · {formatDDay(s.dday)}
                     </p>
                     <h3 className="truncate text-15 font-bold text-ink">{s.title}</h3>
-                    <p className="text-12 text-gray-500">{s.note}</p>
+                    <p className="text-12 text-gray-500">{s.dday < 0 ? '기한이 지났어요' : NOTE[s.kind]}</p>
                     {s.kind === 'refund' && (
                       <Link
-                        to={ROUTES.schedulePolicy(s.id)}
+                        to={ROUTES.schedulePolicy(s.refId)}
                         className="flex w-fit items-center gap-0.5 pt-1.5 text-11 font-bold text-green-600"
                       >
                         규정 다시보기

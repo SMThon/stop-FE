@@ -13,8 +13,8 @@ export type Site = {
 /** 구매 유형 */
 export type PurchaseType = 'general' | 'subscription';
 
-/** 일정 종류: 환불 마감 / 구독 결제 */
-export type ScheduleKind = 'refund' | 'subscription';
+/** 일정 종류: 환불 마감 / 구독 결제 / 직접 추가한 일정 */
+export type ScheduleKind = 'refund' | 'subscription' | 'custom';
 
 export type Schedule = {
   id: string;
@@ -103,6 +103,10 @@ export type ChatMessage = {
   time: string;
   /** AI 답변 아래 '관련 법령 확인' 링크 */
   lawUrl?: string;
+  /** AI 답변의 근거 (법령 조항·규정 항목) */
+  basis?: string[];
+  /** 요청 실패 안내 메시지 */
+  failed?: boolean;
 };
 
 /** 06-2 구매내역 */

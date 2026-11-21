@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Header from '@/components/common/Header';
 import IconButton from '@/components/common/IconButton';
 import { LawIcon, PlusIcon, SendIcon, SparkleIcon } from '@/components/icons';
-import { mockAiReply, mockChatMessages, mockChatSuggestions } from '@/mocks/chat';
+import { mockChatSuggestions } from '@/mocks/chat';
 import type { ChatMessage } from '@/types';
+import { chatApi } from '@/api';
+import { useUser } from '@/app/auth';
+import { chatHistory } from '@/utils/chatHistory';
+
+const LAW_URL = 'https://www.law.go.kr/법령/전자상거래등에서의소비자보호에관한법률';
 
 /** '**강조**' 구간을 초록 굵은 글씨로 렌더링 */
 function RichText({ text }: { text: string }) {
@@ -43,24 +49,68 @@ function nowLabel() {
 
 /** Figma: 05 · AI 환불 상담 (4:513) */
 export default function ChatPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>(mockChatMessages);
+  const user = useUser();
+  // ?policyId=coupang 처럼 넘기면 해당 환불 규정을 근거로 상담한다
+  const [searchParams] = useSearchParams();
+  const policyId = searchParams.get('policyId');
+  const greeting: ChatMessage = {
+    id: 'greeting',
+    role: 'ai',
+    text: `안녕하세요, ${user.name}님.
+환불과 관련해 어떤 점이 궁금하신가요?`,
+    time: nowLabel(),
+  };
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = chatHistory.load();
+    return saved.length > 0 ? saved : [greeting];
+  });
   const [input, setInput] = useState('');
+  const [pending, setPending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' });
-  }, [messages]);
+    if (messages.some((m) => m.role === 'user')) chatHistory.save(messages);
+  }, [messages, pending]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
-    const time = nowLabel();
-    setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: 'user', text: trimmed, time }]);
+    if (!trimmed || pending) return;
+    setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: 'user', text: trimmed, time: nowLabel() }]);
     setInput('');
-    // TODO: AI API 연동. 지금은 mock 답변
-    window.setTimeout(() => {
-      setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'ai', text: mockAiReply, time: nowLabel() }]);
-    }, 600);
+    setPending(true);
+    try {
+      const res = await chatApi.legalCheck(trimmed.slice(0, 1000), policyId);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `a-${Date.now()}`,
+          role: 'ai',
+          text: res.answer,
+          time: nowLabel(),
+          basis: res.basis,
+          lawUrl: res.basis.length > 0 ? LAW_URL : undefined,
+        },
+      ]);
+    } catch (e) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `a-${Date.now()}`,
+          role: 'ai',
+          text: e instanceof Error ? e.message : '답변을 받지 못했어요. 잠시 후 다시 시도해 주세요.',
+          time: nowLabel(),
+          failed: true,
+        },
+      ]);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const resetChat = () => {
+    chatHistory.clear();
+    setMessages([greeting]);
   };
 
   const handleSubmit = (e: FormEvent) => {
@@ -74,7 +124,7 @@ export default function ChatPage() {
         variant="title"
         title="AI 환불 상담"
         right={
-          <IconButton label="새 상담 시작" onClick={() => setMessages(mockChatMessages.slice(0, 1))}>
+          <IconButton label="새 상담 시작" onClick={resetChat}>
             <PlusIcon size={22} />
           </IconButton>
         }
@@ -99,8 +149,19 @@ export default function ChatPage() {
             <div key={m.id} className="flex gap-2.5">
               <AiAvatar size="sm" />
               <div className="flex max-w-[272px] flex-col gap-1.5">
-                <div className="rounded-[20px] bg-surface px-4 py-4 text-13 leading-[21px] whitespace-pre-line text-ink">
+                <div
+                  className={`rounded-[20px] bg-surface px-4 py-4 text-13 leading-[21px] whitespace-pre-line ${
+                    m.failed ? 'text-coral-600' : 'text-ink'
+                  }`}
+                >
                   <RichText text={m.text} />
+                  {m.basis && m.basis.length > 0 && (
+                    <ul className="mt-3 flex flex-col gap-1 border-t border-line-soft pt-2.5 text-11 leading-[17px] text-gray-500">
+                      {m.basis.map((b) => (
+                        <li key={b}>· {b}</li>
+                      ))}
+                    </ul>
+                  )}
                   {m.lawUrl && (
                     <a
                       href={m.lawUrl}
@@ -139,6 +200,12 @@ export default function ChatPage() {
             </div>
           ),
         )}
+        {pending && (
+          <div className="flex gap-2.5" role="status">
+            <AiAvatar size="sm" />
+            <div className="rounded-[20px] bg-surface px-4 py-4 text-13 text-gray-400">답변을 준비하고 있어요…</div>
+          </div>
+        )}
         <div ref={endRef} />
       </main>
 
@@ -158,7 +225,7 @@ export default function ChatPage() {
             type="submit"
             aria-label="보내기"
             className="flex size-11 shrink-0 items-center justify-center rounded-tile bg-green-700 text-white disabled:opacity-60"
-            disabled={!input.trim()}
+            disabled={!input.trim() || pending}
           >
             <SendIcon size={20} />
           </button>
