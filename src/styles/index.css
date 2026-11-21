@@ -1,0 +1,133 @@
+@import 'tailwindcss';
+
+/*
+ * 디자인 토큰 — Figma(환불정거장)에서 추출.
+ * Figma 파일에 Variables가 없어 실제 사용 값을 수집해 비슷한 값끼리 묶었습니다.
+ * 컴포넌트에서는 hex를 직접 쓰지 말고 아래 토큰 유틸리티(bg-green-700, text-ink …)만 사용하세요.
+ */
+@theme {
+  /* ---------- Font ---------- */
+  --font-sans: 'Noto Sans KR', system-ui, sans-serif;
+
+  /* ---------- Color: 기본 ---------- */
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-app: #f7f8f5; /* 앱 배경 */
+  --color-surface: #ffffff; /* 카드 배경 */
+  --color-surface-muted: #f1f4f1; /* 세그먼트 탭 배경 */
+  --color-surface-sunken: #edf1ee; /* 아이콘 칩 배경 */
+  --color-line: #e5eae6; /* 카드·탭바 테두리 */
+  --color-line-soft: #edf0ed; /* 리스트 구분선 */
+  --color-line-strong: #dfe6e1; /* 진행 라인 */
+  --color-ink: #18231e; /* 본문 제목 */
+
+  --color-gray-200: #d9dfdb;
+  --color-gray-300: #cbd2cd;
+  --color-gray-400: #a0aaa4;
+  --color-gray-500: #8b958f;
+  --color-gray-600: #6d7972;
+  --color-gray-700: #4c5851;
+  --color-gray-800: #3d4b44;
+
+  /* ---------- Color: 브랜드 그린 ---------- */
+  --color-green-900: #183d2d; /* 히어로 */
+  --color-green-800: #204c38; /* AI 배너 */
+  --color-green-700: #245e3e; /* Primary 버튼, 선택 날짜 */
+  --color-green-600: #276d47; /* 활성 탭, 링크, 브랜드 마크 */
+  --color-green-500: #2f8a57; /* 토글 on, 섹션 번호 */
+  --color-green-400: #43a367; /* 라디오, 체크 배지, 활성 점 */
+  --color-green-300: #68bb86; /* 선택 타일 테두리 */
+  --color-green-200: #9ee3b5; /* 어두운 배경 위 강조 */
+  --color-green-50: #f3faf5; /* 선택 타일 배경 */
+
+  /* 어두운(그린) 배경 위 텍스트 */
+  --color-on-dark-accent: #7dc494;
+  --color-on-dark-200: #cfe3d6;
+  --color-on-dark-300: #acc1b5;
+  --color-on-dark-400: #9ab7a7;
+
+  /* ---------- Color: 상태 ---------- */
+  --color-coral-50: #fff0ec; /* 환불 마감 배지 배경 */
+  --color-coral-400: #ef846d; /* 환불 마감 점, 알림 점 */
+  --color-coral-500: #dc7966; /* 일요일 */
+  --color-coral-600: #d65d49; /* 환불 마감 텍스트 */
+
+  --color-amber-50: #fff7df; /* 구독 결제 배지 배경 */
+  --color-amber-400: #e8b64c; /* 구독 결제 점, 오늘 마커 */
+  --color-amber-700: #9a7118; /* 구독 결제 텍스트 */
+
+  /* 법령 카드 (올리브) */
+  --color-olive-50: #efefe6;
+  --color-olive-100: #e3e2d6;
+  --color-olive-200: #e4e1cc;
+  --color-olive-500: #9a936e;
+  --color-olive-600: #8a7f45;
+  --color-olive-700: #81773b;
+  --color-olive-900: #3f4438;
+
+  /* 쇼핑몰 브랜드 칩 */
+  --color-site-coupang: #3175a1;
+  --color-site-coupang-bg: #edf3f3;
+  --color-site-naver: #38a566;
+  --color-site-11st: #ef6b59;
+
+  /* ---------- Typography ---------- */
+  --text-10: 10px;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-19: 19px;
+  --text-20: 20px;
+  --text-21: 21px;
+  --text-22: 22px;
+  --text-25: 25px;
+  --text-28: 28px;
+
+  --tracking-display: -0.05em; /* 28px 히어로 */
+  --tracking-brand: -0.04em; /* 20px 로고타입 */
+  --tracking-title: -0.03em; /* 19px 섹션 제목 */
+  --tracking-snug: -0.02em; /* 15px 배너 제목 */
+  --tracking-label: 0.12em; /* 10px 영문 라벨 */
+
+  --leading-figma: 1.2; /* Figma 'Auto' 줄높이 (Noto Sans KR 기준 실측) */
+  --leading-display: 1.38;
+  --leading-body: 1.5;
+
+  /* ---------- Radius ---------- */
+  --radius-chip: 7px; /* D-day 배지 */
+  --radius-icon: 10px; /* 아이콘 칩, 세그먼트 탭 */
+  --radius-control: 12px; /* 버튼, 타일, 세그먼트 */
+  --radius-tile: 14px; /* 큰 아이콘 박스 */
+  --radius-card-sm: 18px; /* 일정 카드 */
+  --radius-card: 20px; /* 기본 카드 */
+
+  /* ---------- Shadow ---------- */
+  --shadow-card: 0 8px 12px rgb(31 61 46 / 0.09);
+  --shadow-tab: 0 2px 3px rgb(31 56 43 / 0.08);
+  --shadow-knob: 0 1px 3px rgb(0 0 0 / 0.15);
+
+  /* ---------- Layout ---------- */
+  --spacing-gutter: 20px; /* 화면 좌우 여백 */
+  --spacing-nav: 84px; /* 하단 탭바 높이 */
+  --container-app: 390px; /* 앱 최대 폭 */
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-app font-sans text-ink antialiased;
+  /* Figma 텍스트는 대부분 line-height Auto ≈ 1.2 */
+  line-height: var(--leading-figma);
+  word-break: keep-all;
+}
