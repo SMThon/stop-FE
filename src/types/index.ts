@@ -114,4 +114,14 @@ export type LawTip = {
 
 export type User = {
   name: string;
+  email: string;
+  /** 아바타에 표시할 이니셜 */
+  initial: string;
+};
+
+export type MyStats = {
+  products: number;
+  refunding: number;
+  chats: number;
+  purchases: number;
 };

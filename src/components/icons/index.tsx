@@ -124,6 +124,32 @@ export const SparkleIcon = createStrokeIcon('SparkleIcon', 24, [
 ]);
 export const SendIcon = createStrokeIcon('SendIcon', 24, ['M21 3L10 14', 'M21 3L14.5 21L10 14L3 9.5L21 3Z']);
 
+// ---- 06 설정 ----
+export const ReceiptIcon = createStrokeIcon('ReceiptIcon', 24, [
+  'M6 3H18V21L16 19.5L14 21L12 19.5L10 21L8 19.5L6 21V3Z',
+  'M9 8H15M9 12H15M9 16H13',
+]);
+export const BellLineIcon = createStrokeIcon('BellLineIcon', 24, [
+  'M18 9.5C18 7.9087 17.3679 6.38258 16.2426 5.25736C15.1174 4.13214 13.5913 3.5 12 3.5C10.4087 3.5 8.88258 4.13214 7.75736 5.25736C6.63214 6.38258 6 7.9087 6 9.5C6 16.5 3 16.5 3 18.5H21C21 16.5 18 16.5 18 9.5Z',
+  'M10 21.5H14',
+]);
+export const TrashIcon = createStrokeIcon('TrashIcon', 24, [
+  'M4 6.5H20',
+  'M9 6.5V4.5C9 3.94772 9.44772 3.5 10 3.5H14C14.5523 3.5 15 3.94772 15 4.5V6.5',
+  'M6 6.5L7 19.5C7.04 20.05 7.5 20.5 8.05 20.5H15.95C16.5 20.5 16.96 20.05 17 19.5L18 6.5',
+  'M10 10.5V16.5M14 10.5V16.5',
+]);
+export const LogOutIcon = createStrokeIcon('LogOutIcon', 24, [
+  'M9 4H6C5.44772 4 5 4.44772 5 5V19C5 19.5523 5.44772 20 6 20H9',
+  'M15 8L19 12L15 16',
+  'M19 12H10',
+]);
+export const UserXIcon = createStrokeIcon('UserXIcon', 24, [
+  'M12 7.5C12 9.433 10.433 11 8.5 11C6.567 11 5 9.433 5 7.5C5 5.567 6.567 4 8.5 4C10.433 4 12 5.567 12 7.5Z',
+  'M2 20C2 16.6863 4.91015 14 8.5 14C12.0899 14 15 16.6863 15 20',
+  'M17 8L21 12M21 8L17 12',
+]);
+
 /** 환불정거장 브랜드 마크 */
 export const BrandMark = createStrokeIcon(
   'BrandMark',

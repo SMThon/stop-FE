@@ -1,11 +1,22 @@
-import type { LawTip, Schedule, Site, User } from '@/types';
+import type { LawTip, MyStats, Schedule, Site, User } from '@/types';
 
 /** mock 기준 '오늘' (Figma 시안 날짜: 2025-05-14). 실제 연동 시 new Date()로 교체 */
 export const MOCK_TODAY = '2025-05-14';
 
 export const mockUser: User = {
   name: '정거장',
+  email: 'jeonggeojang@gmail.com',
+  initial: 'J',
 };
+
+export const mockMyStats: MyStats = {
+  products: 3,
+  refunding: 1,
+  chats: 12,
+  purchases: 4,
+};
+
+export const APP_VERSION = '1.0.0';
 
 export const mockSites: Site[] = [
   { id: 'coupang', name: '쿠팡', initial: '쿠', logo: 'C' },
