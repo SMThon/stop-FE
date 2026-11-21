@@ -25,6 +25,9 @@ export const mockSites: Site[] = [
   { id: 'etc', name: '기타', initial: '+', logo: '+' },
 ];
 
+/** 구독 서비스까지 포함한 전체 서비스 목록 (구매처 선택에는 mockSites만 노출) */
+export const mockAllSites: Site[] = [...mockSites, { id: 'netflix', name: '넷플릭스', initial: 'N', logo: 'N' }];
+
 export const mockSchedules: Schedule[] = [
   {
     id: 's-0',
@@ -51,7 +54,7 @@ export const mockSchedules: Schedule[] = [
   {
     id: 's-2',
     kind: 'subscription',
-    siteId: 'etc',
+    siteId: 'netflix',
     title: '넷플릭스 스탠다드',
     shortTitle: '넷플릭스',
     date: '2025-05-26',

@@ -5,6 +5,7 @@ import Card from '@/components/common/Card';
 import SiteChip from '@/components/common/SiteChip';
 import PrimaryButton from '@/components/common/PrimaryButton';
 import OutlineButton from '@/components/common/OutlineButton';
+import ChipTabs from '@/components/common/ChipTabs';
 import {
   AlertCircleIcon,
   BoxIcon,
@@ -136,25 +137,7 @@ export default function PolicyReviewPage() {
         </section>
 
         {/* 탭 */}
-        <div role="tablist" aria-label="규정 보기 방식" className="flex gap-1.5">
-          {TABS.map(({ id, label }) => {
-            const active = tab === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setTab(id)}
-                className={`h-8 rounded-full px-3.5 text-12 ${
-                  active ? 'bg-green-700 font-bold text-white' : 'border border-line-strong bg-surface font-medium text-gray-600'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
+        <ChipTabs tabs={TABS} value={tab} onChange={setTab} label="규정 보기 방식" />
 
         {/* 한눈에 보는 배송비 */}
         {tab === 'all' && (
