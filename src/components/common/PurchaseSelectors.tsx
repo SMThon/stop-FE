@@ -10,8 +10,10 @@ const PURCHASE_TYPES: { id: PurchaseType; label: string }[] = [
 
 type Props<T> = { value: T; onChange: (value: T) => void; className?: string };
 
-/** 구매 유형별로 선택 가능한 사이트 (정기 구독 → OTT 서비스) */
-export const sitesFor = (type: PurchaseType) => (type === 'subscription' ? mockSubscriptionSites : mockSites);
+/** 구매 유형별로 선택 가능한 사이트 (정기 구독 → OTT 서비스 + 기타) */
+const ETC_SITE = mockSites.find((s) => s.id === 'etc')!;
+const SUBSCRIPTION_SITES = [...mockSubscriptionSites, ETC_SITE];
+export const sitesFor = (type: PurchaseType) => (type === 'subscription' ? SUBSCRIPTION_SITES : mockSites);
 
 /** 일반 구매 / 정기 구독 세그먼트 (Figma: 01 Type Tabs, 03 STEP 1) */
 export function PurchaseTypeTabs({ value, onChange, className = '' }: Props<PurchaseType>) {
