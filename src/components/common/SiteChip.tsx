@@ -12,13 +12,14 @@ const TONE: Record<SiteId, string> = {
 const SIZE = {
   md: 'size-[34px] rounded-icon text-13',
   lg: 'size-[46px] rounded-control text-20',
+  xl: 'size-[52px] rounded-tile text-20',
 } as const;
 
 type SiteChipProps = {
   siteId: SiteId;
   /** 칩 안 글자 (site.initial 또는 site.logo) */
   label: string;
-  /** md = 34px(기본), lg = 46px(규정 다시보기 상단) */
+  /** md = 34px(기본), lg = 46px(규정 다시보기), xl = 52px(환불 규정 결과) */
   size?: keyof typeof SIZE;
 };
 
