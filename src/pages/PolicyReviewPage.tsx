@@ -6,8 +6,8 @@ import SiteChip from '@/components/common/SiteChip';
 import PrimaryButton from '@/components/common/PrimaryButton';
 import OutlineButton from '@/components/common/OutlineButton';
 import ChipTabs from '@/components/common/ChipTabs';
+import CautionCard from '@/components/common/CautionCard';
 import {
-  AlertCircleIcon,
   BoxIcon,
   CardIcon,
   InfoIcon,
@@ -187,22 +187,7 @@ export default function PolicyReviewPage() {
         ))}
 
         {/* 주의 사항 */}
-        {tab !== 'refund' && (
-          <section className="rounded-card border border-coral-100 bg-coral-25 px-5 pt-[21px] pb-4.5">
-            <h2 className="flex items-center gap-2.5 text-14 font-bold text-coral-700">
-              <AlertCircleIcon size={18} className="text-coral-600" />
-              이런 경우엔 반품·교환이 어려워요
-            </h2>
-            <ul className="mt-3 flex flex-col gap-2.5">
-              {review.cautions.map((c) => (
-                <li key={c} className="flex items-center gap-2.5 text-12 text-coral-900">
-                  <span aria-hidden className="size-[5px] shrink-0 rounded-full bg-coral-400" />
-                  {c}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        {tab !== 'refund' && <CautionCard title="이런 경우엔 반품·교환이 어려워요" items={review.cautions} />}
 
         {/* 출처 */}
         <p className="flex items-start gap-3 rounded-box bg-olive-50 px-4 pt-2.5 pb-3.5 text-11 leading-[19px] text-olive-900">
