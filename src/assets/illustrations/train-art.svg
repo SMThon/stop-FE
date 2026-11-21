@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="200" height="112" viewBox="0 0 200 112" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="train-art">
+<path id="Vector" d="M200 8H62C34 8 14 30 12 60L10 92C10 98 14 102 20 102H200" stroke-width="2.5" stroke="#8FDCA8" stroke-opacity="0.45"/>
+<path id="Vector_2" d="M42 26H80C85.5228 26 90 30.4772 90 36V58C90 63.5228 85.5228 68 80 68H42C36.4772 68 32 63.5228 32 58V36C32 30.4772 36.4772 26 42 26Z" stroke-width="2.5" stroke="#8FDCA8" stroke-opacity="0.35"/>
+<path id="Vector_3" d="M114 26H130C132.209 26 134 27.7909 134 30V50C134 52.2091 132.209 54 130 54H114C111.791 54 110 52.2091 110 50V30C110 27.7909 111.791 26 114 26Z" stroke-width="2.5" stroke="#8FDCA8" stroke-opacity="0.35"/>
+<path id="Vector_4" d="M152 26H168C170.209 26 172 27.7909 172 30V50C172 52.2091 170.209 54 168 54H152C149.791 54 148 52.2091 148 50V30C148 27.7909 149.791 26 152 26Z" stroke-width="2.5" stroke="#8FDCA8" stroke-opacity="0.35"/>
+<path id="Vector_5" d="M52 109C55.866 109 59 105.866 59 102C59 98.134 55.866 95 52 95C48.134 95 45 98.134 45 102C45 105.866 48.134 109 52 109Z" fill="#183D2D" stroke-width="2" stroke="#9EE3B5"/>
+<path id="Vector_6" d="M52 105C53.6569 105 55 103.657 55 102C55 100.343 53.6569 99 52 99C50.3431 99 49 100.343 49 102C49 103.657 50.3431 105 52 105Z" fill="#9EE3B5"/>
+<path id="Vector_7" d="M168 109C171.866 109 175 105.866 175 102C175 98.134 171.866 95 168 95C164.134 95 161 98.134 161 102C161 105.866 164.134 109 168 109Z" fill="#183D2D" stroke-width="2" stroke="#9EE3B5"/>
+<path id="Vector_8" d="M168 105C169.657 105 171 103.657 171 102C171 100.343 169.657 99 168 99C166.343 99 165 100.343 165 102C165 103.657 166.343 105 168 105Z" fill="#9EE3B5"/>
+</g>
+</svg>
